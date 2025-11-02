@@ -17,17 +17,19 @@ export default function Hero() {
       <p className="text-lg mb-8 max-w-md">
         Real-time service monitoring built with React and Tailwind
       </p>
-      <div className="flex">
+      <div className="flex gap-8">
       {Cards.map((Card) => (
      <HeroCard key={Card.title} title={Card.title} description={Card.description as any} /> 
       ))}
-      </div>     
+      </div> 
+      <div className="column-gap-8">  
      <button
         onClick={scrollToDashboard}
-        className="px-6 py-3 border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+        className="mt-10 px-6 py-3 border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
       >
         View Dashboard ↓
       </button>
+      </div>  
     </section>
   );
 }
