@@ -41,7 +41,7 @@ export default function Home() {
   [key: string]: Service[]; // key = status, value = array of services
   };
 
-  const grouped = services.reduce((groups, stat) => 
+  const grouped = filtered.reduce((groups, stat) => 
   {
     if(!groups[stat.groupStatus])
     {
@@ -89,7 +89,7 @@ export default function Home() {
       {/* Grid of cards */}
       <div id="dashboard" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {Object.entries(grouped).map(([groupStatus, services]) => (
-          <div key={groupStatus}>
+          <div key={groupStatus} className="mb-8">
             <h2>{groupStatus}</h2>
             {services.map(service => (
               <StatusCard 
