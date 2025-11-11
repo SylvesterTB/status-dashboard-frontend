@@ -1,23 +1,25 @@
 "use client"
 import StatusCard from "./components/StatusCard";
 import { useState, useMemo, useEffect } from "react";
+import { fetchStatus } from "./fetchStatus"
 
 type Service = {
-  name: string;
-  groupStatus: string;
-  timeChecked: string;
+  url: string;
+  status: string;
+  response_time: number;
 };
 
 export default function Home() {
-  const services = [
-    { name: "Website A", groupStatus: "up", timeChecked: "~min"},
-    { name: "API Server", groupStatus: "down", timeChecked: "<30s"},
-    { name: "Database A", groupStatus: "unknown", timeChecked: "N/A"},
-    { name: "Website B", groupStatus: "up", timeChecked: "~min" },
-    { name: "Database B", groupStatus: "unknown", timeChecked: "N/A"},
-    { name: "Website C", groupStatus: "up", timeChecked: "~min" },
-    { name: "Website D", groupStatus: "down", timeChecked: "~min" },
-  ];
+  const [services, setServices] = useState<Service[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL!);
+      const data: Service[] = await res.json();
+      setServices(data);
+    };
+    fetchData();
+  }, []);
+
  // setting up search bar here 
   const [query, setQuery] = useState<string>("");
 
@@ -30,10 +32,11 @@ export default function Home() {
   const filtered = useMemo(() => {
     if (!debouncedQuery) return services;
     return services.filter((s) =>
-      s.name.toLowerCase().includes(debouncedQuery) ||
-      s.groupStatus.toLowerCase().includes(debouncedQuery)
+      s.url.toLowerCase().includes(debouncedQuery) ||
+      s.status.toLowerCase().includes(debouncedQuery)
     );
   }, [debouncedQuery, services]);
+
 
   // set up filtering here
 
@@ -43,11 +46,11 @@ export default function Home() {
 
   const grouped = filtered.reduce((groups, stat) => 
   {
-    if(!groups[stat.groupStatus])
+    if(!groups[stat.status])
     {
-      groups[stat.groupStatus] = [];
+      groups[stat.status] = [];
     }
-    groups[stat.groupStatus].push(stat);
+    groups[stat.status].push(stat);
     return groups;
   }, {} as Grouped);
 
@@ -93,10 +96,10 @@ export default function Home() {
             <h2>{groupStatus}</h2>
             {services.map(service => (
               <StatusCard 
-                key={service.name} 
-                name={service.name} 
-                status={service.groupStatus as any} 
-                timeChecked={service.timeChecked as any} 
+                key={service.url.substring(8,service.url.length-5)} 
+                name={service.url.substring(8,service.url.length-5)} 
+                status={service.status as any} 
+                timeChecked={service.response_time as any} 
                 />
               ))}
             </div>
