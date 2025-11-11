@@ -13,12 +13,17 @@ export default function Home() {
   const [services, setServices] = useState<Service[]>([]);
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL!);
-      const data: Service[] = await res.json();
-      setServices(data);
+      try {
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL!);
+        const data: Service[] = await res.json();
+        setServices(data);
+      } catch (error) {
+        console.error("Fetch error:", error); 
+      }
     };
     fetchData();
   }, []);
+
 
  // setting up search bar here 
   const [query, setQuery] = useState<string>("");
@@ -96,10 +101,10 @@ export default function Home() {
             <h2>{groupStatus}</h2>
             {services.map(service => (
               <StatusCard 
-                key={service.url.substring(8,service.url.length-5)} 
-                name={service.url.substring(8,service.url.length-5)} 
+                key={service.url.charAt(8).toUpperCase() + service.url.substring(9,service.url.length-4)} 
+                name={service.url.charAt(8).toUpperCase() + service.url.substring(9,service.url.length-4)} 
                 status={service.status as any} 
-                timeChecked={service.response_time as any} 
+                response_time={service.response_time as any} 
                 />
               ))}
             </div>
