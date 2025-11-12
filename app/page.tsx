@@ -23,7 +23,22 @@ export default function Home() {
     };
     fetchData();
   }, []);
+  const fixedData = services.map((site: any) => {
+    // name from URL
+    const siteName = new URL(site.url).hostname.replace("www.", "");
 
+  // override the name for test URLs
+  if (siteName === "httpstat.us" && site.status === "DOWN") {
+    if (site.url?.includes("503")) {
+      return { ...site, name: "HTTPStat.us (Test 503)" };
+    } else if (site.url?.includes("404")) {
+      return { ...site, name: "HTTPStat.us (Test 404)" };
+    }
+  }
+
+  // default: keep all other fields + add name
+  return { ...site, name: siteName };
+});
 
  // setting up search bar here 
   const [query, setQuery] = useState<string>("");
@@ -59,10 +74,6 @@ export default function Home() {
     return groups;
   }, {} as Grouped);
 
-
-
-
-
   return (
     <main className="p-8">
       {/* Search bar */}
@@ -78,7 +89,7 @@ export default function Home() {
             className="w-full rounded-full border border-gray-300 px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-black"
             aria-label="Search services"
           />
-          {/* optional clear button */}
+          
           {query && (
             <button
               onClick={() => setQuery("")}
@@ -96,20 +107,37 @@ export default function Home() {
 
       {/* Grid of cards */}
       <div id="dashboard" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(grouped).map(([groupStatus, services]) => (
-          <div key={groupStatus} className="mb-8">
-            <h2>{groupStatus}</h2>
-            {services.map(service => (
-              <StatusCard 
-                key={service.url.charAt(8).toUpperCase() + service.url.substring(9,service.url.length-4)} 
-                name={service.url.charAt(8).toUpperCase() + service.url.substring(9,service.url.length-4)} 
-                status={service.status as any} 
-                response_time={service.response_time as any} 
-                />
+        {services.length === 0 ? (
+            <div className="col-span-full grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-pulse">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded-xl border" />
               ))}
             </div>
-          ))};
-        
+          ) : (
+            Object.entries(grouped).map(([groupStatus, groupServices]) => (
+              <div key={groupStatus} className="mb-8">
+                <h2 className="font-semibold mb-2">{groupStatus}</h2>
+                {groupServices.map((service) => {
+                  const siteName = new URL(service.url).hostname.replace("www.", "");
+                  const displayName =
+                    siteName === "httpstat.us" && service.url.includes("503")
+                      ? "HTTPStat.us (Test 503)"
+                      : siteName === "httpstat.us" && service.url.includes("404")
+                      ? "HTTPStat.us (Test 404)"
+                      : siteName;
+
+                  return (
+                    <StatusCard
+                      key={service.url}
+                      name={displayName}
+                      status={service.status}
+                      response_time={service.response_time}
+                    />
+                  );
+                })}
+              </div>
+            ))
+          )}
         
         {filtered.length === 0 && (
           <div className="col-span-full text-center text-gray-500 py-8">
